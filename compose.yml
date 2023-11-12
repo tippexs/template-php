@@ -1,0 +1,13 @@
+services:
+  app:
+    image: tippexs/php-dev:8.2
+    volumes:
+      - type: bind
+        source: ./
+        target: /opt/src/
+
+  # Change the database engine if needed!
+  db:
+    image: mariadb:latest
+    environment:
+      - MARIADB_ROOT_PASSWORD=password

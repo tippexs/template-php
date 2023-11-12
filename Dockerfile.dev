@@ -1,0 +1,29 @@
+# Development Image for my local stuff!
+FROM php:8.2
+
+# Install / build dependencies for common frameworks
+RUN apt update && apt install  --no-install-recommends -y libicu-dev git unzip && \
+    docker-php-ext-install intl pdo_mysql mysqli && \
+    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
+
+    # Install composer in quite mode.
+    # This can be replaced with `docker ini php` soon.
+
+    EXPECTED_CHECKSUM="$(php -r 'copy("https://composer.github.io/installer.sig", "php://stdout");')" && \
+    ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")" && \
+    if [ "$EXPECTED_CHECKSUM" != "$ACTUAL_CHECKSUM" ]; then \
+        >&2 echo 'ERROR: Invalid installer checksum'; \
+        rm composer-setup.php; \
+        exit 1; \
+    fi; \
+    php composer-setup.php --quiet && \
+    php -r "unlink('composer-setup.php');" && \
+    mv composer.phar /usr/local/bin/composer
+
+# This will create a user that matches my WSL2 userId 1000.
+RUN adduser tippexs
+# Workdir set to /opt/src as this is where we mount the files per default.
+WORKDIR /opt/src/
+
+
+
